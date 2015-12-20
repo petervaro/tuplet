@@ -171,7 +171,17 @@ _RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
     |>
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-!run_it =                                                                      \
-    |> ^ RUN: %f^                                                              \
-        $(ENV_VARS) ./%f                                                       \
-    |>
+ifdef DEBUG
+    !run_it =                                                                  \
+        |> ^ RUN: valgrind %f^                                                 \
+            $(ENV_VARS) valgrind ./%f                                          \
+        |>
+else
+    !run_it =                                                                  \
+        |> ^ RUN: %f^                                                          \
+            $(ENV_VARS) ./%f                                                   \
+        |>
+endif
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+!pretty = |> python -c "print('\n'*2 + '\033[1m' + '- '*40 + '\033[0m')" |>
