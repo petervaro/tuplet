@@ -87,9 +87,12 @@ endif
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 ifeq (@(TUP_PLATFORM),win32)
     CPPPATH =
+    LIBPATH =
 else
     CPPPATH  = -I/usr/include
     CPPPATH += -I/usr/local/include
+    LIBPATH  = -L/usr/lib
+    LIBPATH += -L/usr/local/lib
 endif
 
 
@@ -101,7 +104,14 @@ else
     SOURCE_DIR = src
 endif
 
-# Directory of
+# Directory of header files
+ifdef INCLUDE_INPUT_DIR
+    INCLUDE_DIR = @(INCLUDE_INPUT_DIR)
+else
+    INCLUDE_DIR = include
+endif
+
+# Directory of libraries
 ifdef LIBRARY_OUTPUT_DIR
     LIBRARY_DIR = @(LIBRARY_OUTPUT_DIR)
 else
