@@ -65,12 +65,14 @@ endif
 # Define compiler flags
 CFLAGS  = $(STD)
 CFLAGS += $(WARN)
-CFLAGS += -O3
 
 # If this is a debug build
 ifdef DEBUG
     CFLAGS += -g
     CFLAGS += -v
+    CFLAGS += -O0
+else
+    CFLAGS += -O3
 endif
 
 # Add compiler specific flags
@@ -134,21 +136,42 @@ endif
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 # Helper commands
-__RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
-             stdout.write(sub(r'\n{3,}', '\n'*2, stdin.read(), flags=M))"
+_RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
+            stdout.write(sub(r'\n{3,}', '\n'*2, stdin.read(), flags=M))"
 
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 # Compiler macros
-!to_obj = \
-    |> ^ OBJ: %f => %o^ $(CC) $(CFLAGS) -fPIC -o %o -c %f |>
-!to_lib = \
-    |> ^ LIB: %f => %o^ $(CC) -shared -o %o %f |>
-!to_bin = \
-    |> ^ BIN: %f => %o^ $(CC) $(CFLAGS) -o %o %f |>
-!to_arc = \
-    |> ^ ARC: %f => %o^ ar rcs %o %f |>
-!to_cpp = \
-    |> ^ CPP: %f => %o^ $(CC) $(CFLAGS) -CC -E -P %f | $(__RM_BLANK) > %o |>
-!run_it = \
-    |> ^ RUN: %f => %o^ ./%f |>
+!to_obj =                                                                      \
+    |> ^ OBJ: %f => %o^                                                        \
+        $(CC) $(CFLAGS) $(CPPPATH) -fPIC -o %o -c %f                           \
+    |>
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+!to_lib =                                                                      \
+    |> ^ LIB: %f => %o^                                                        \
+        $(CC) -shared -o %o %f |>
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+!to_bin =                                                                      \
+    |> ^ BIN: %f => %o^                                                        \
+        $(CC) $(CFLAGS) $(LIBPATH) $(CPPPATH) -o %o %f                         \
+    |>
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+!to_arc =                                                                      \
+    |> ^ ARC: %f => %o^                                                        \
+        ar rcs %o %f                                                           \
+    |>
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+!to_cpp =                                                                      \
+    |> ^ CPP: %f => %o^                                                        \
+        $(CC) $(CFLAGS) $(CPPPATH) -CC -E -P %f | $(_RM_BLANK) > %o            \
+    |>
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+!run_it =                                                                      \
+    |> ^ RUN: %f^                                                              \
+        $(ENV_VARS) ./%f                                                       \
+    |>
