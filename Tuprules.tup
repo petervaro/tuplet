@@ -51,8 +51,6 @@ WARN += -Wpedantic
 ifdef DEVEL
     ifeq ($(CC_NAME),clang)
         WARN += -Weverything
-        # Default label in switch which covers all enumeration values
-        WARN += -Wno-covered-switch-default
     else
         ifeq ($(CC_NAME),gcc)
             WARN += -Wpadded
@@ -70,6 +68,7 @@ CFLAGS += $(WARN)
 ifdef DEBUG
     CFLAGS += -g
     CFLAGS += -v
+    CFLAGS += -H
     CFLAGS += -O0
 else
     CFLAGS += -O3
@@ -172,9 +171,11 @@ _RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 ifdef DEBUG
+    VALGRIND  = --verbose
+    VALGRIND += --leak-check=full
     !run_it =                                                                  \
         |> ^ RUN: valgrind %f^                                                 \
-            $(ENV_VARS) valgrind ./%f                                          \
+            $(ENV_VARS) valgrind $(VALGRIND) ./%f                              \
         |>
 else
     !run_it =                                                                  \
