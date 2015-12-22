@@ -47,13 +47,19 @@ WARN  = -Wall
 WARN += -Wextra
 WARN += -Wpedantic
 
-# If this is a developer build
+# If development/debug build
 ifdef DEVEL
+    WARN += -fstrict-aliasing
+    WARN += -fsanitize=undefined,alignment
+    # TODO: **sanitized address**
+    #       At the moment for some reason -fsanitize=address breaks valgrind.
+    #       More info: https://github.com/google/sanitizers/issues/303
     ifeq ($(CC_NAME),clang)
         WARN += -Weverything
     else
         ifeq ($(CC_NAME),gcc)
             WARN += -Wpadded
+            WARN += -Wconversion
         endif
     endif
 endif
@@ -64,12 +70,12 @@ endif
 CFLAGS  = $(STD)
 CFLAGS += $(WARN)
 
-# If this is a debug build
-ifdef DEBUG
+# If development/debug build
+ifdef DEVEL
     CFLAGS += -g
     CFLAGS += -v
-    CFLAGS += -H
     CFLAGS += -O0
+# If release build
 else
     CFLAGS += -O3
 endif
@@ -140,49 +146,108 @@ _RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
 
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-# Compiler macros
+# Compile sources to objects
 !to_obj =                                                                      \
     |> ^ OBJ: %f => %o^                                                        \
         $(CC) $(CFLAGS) $(CPPPATH) -fPIC -o %o -c %f                           \
     |>
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+# Combine objects to shared object (dynamic library)
 !to_lib =                                                                      \
     |> ^ LIB: %f => %o^                                                        \
-        $(CC) -shared -o %o %f |>
-
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-!to_bin =                                                                      \
-    |> ^ BIN: %f => %o^                                                        \
-        $(CC) $(CFLAGS) $(LIBPATH) $(CPPPATH) -o %o %f                         \
+        $(CC) -shared -o %o %f                                                 \
     |>
 
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+# Combine objects to archive (static library)
 !to_arc =                                                                      \
     |> ^ ARC: %f => %o^                                                        \
         ar rcs %o %f                                                           \
     |>
 
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+# Run pre-processor only
 !to_cpp =                                                                      \
     |> ^ CPP: %f => %o^                                                        \
         $(CC) $(CFLAGS) $(CPPPATH) -CC -E -P %f | $(_RM_BLANK) > %o            \
     |>
 
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-ifdef DEBUG
-    VALGRIND  = --verbose
+# Combine objects to a binary (executable)
+!to_bin =                                                                      \
+    |> ^ BIN: %f => %o^                                                        \
+        $(CC) $(CFLAGS) $(LIBPATH) $(CPPPATH) -o %o %f                         \
+    |>
+
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+# If development/debug build
+ifdef DEVEL
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    # Statically analyze compiling source to objects
+    !scan_obj =                                                                \
+        |> ^ OBJ: scan-build %f => /dev/null^                                  \
+            scan-build -o $(BUILD_DIR)/scan-out                                \
+            $(CC) $(CFLAGS) $(CPPPATH) -fPIC -o /dev/null -c %f                \
+        |>
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    # Statically analyze combining objects to shared object (dynamic library)
+    !scan_lib =                                                                \
+        |> ^ LIB: scan-build %f => /dev/null^                                  \
+            scan-build -o $(BUILD_DIR)/scan-out                                \
+            $(CC) -shared -o /dev/null %f                                      \
+        |>
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    # Statically analyze combining objects to archive (static library)
+    !scan_arc =                                                                \
+        |> ^ ARC: scan-build %f => /dev/null^                                  \
+            scan-build -o $(BUILD_DIR)/scan-out                                \
+            ar rcs /dev/null %f                                                \
+        |>
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    # Statically analyze combining objects to archive (static library)
+    !scan_bin =                                                                \
+        |> ^ BIN: scan-build %f => /dev/null^                                  \
+            scan-build -o $(BUILD_DIR)/scan-out                                \
+            $(CC) $(CFLAGS) $(LIBPATH) $(CPPPATH) -o /dev/null %f              \
+        |>
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    # Run binary via valgrind
     VALGRIND += --leak-check=full
+    VALGRIND += --track-origins=yes
     !run_it =                                                                  \
         |> ^ RUN: valgrind %f^                                                 \
             $(ENV_VARS) valgrind $(VALGRIND) ./%f                              \
         |>
+# If release build
 else
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    # Do nothing
+    !scan_obj = |> |>
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    !scan_lib = |> |>
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    !scan_arc = |> |>
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    !scan_bin = |> |>
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    # Run binary
     !run_it =                                                                  \
         |> ^ RUN: %f^                                                          \
             $(ENV_VARS) ./%f                                                   \
         |>
 endif
 
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+# Print pretty separator
 !pretty = |> python -c "print('\n'*2 + '\033[1m' + '- '*40 + '\033[0m')" |>

@@ -1,0 +1,51 @@
+TUPLET
+======
+
+The tuplet package contains predefined variables, macros, configuration files
+and an installer script. It supports developer and release variant builds for
+both clang and gcc, provides clang static analyzer and valgrind macros.
+
+
+Setup
+-----
+
+    $ cd path/to/project
+    $ git init
+    $ git submodule add https://github.com/petervaro/tuplet.git
+    $ cd tuplet
+    $ bash setup.sh
+    $ cd ..
+    $ touch Tupfile
+    $ tup init
+    $ tup
+
+
+Remove
+------
+
+    $ cd path/to/project
+    $ cd tuplet
+    $ bash setup.sh remove
+
+
+LIMITATIONS
+-----------
+
+One can overwrite the default folder names of the directories the Tuprules.tup
+is using via the tup.conig file. However because of an unfortunate
+incompatibility issue* between tup and scan-build (clang static analyzer), the
+setup.sh will use the default 'build' name for BUILD_DIR, and will create it
+outside of tup. If one is not going to use the scan-macros, one can remove the
+folders created by setup.sh (that is: build/scan-out) and can rename the
+BUILD_DIR to whatever one likes.
+
+
+- - -
+*scan-build automatically removes the empty directory where it saves its data if
+there are no bugs found during the building phase. Unfortunatelly tup cannot
+handle this action, and will complain about dependency problems. The workaround
+I found is very simple, but not so flexible: if the folder is created by other
+than scan-build, scan-build won't delete it, hence the strict creation of the
+folder in the setup.sh. Though the setup.sh cannot read, parse and get the
+BUILD_DIR value defined by one, that's why it is not flexible: it is a
+hard-coded name: build/scan-out.
