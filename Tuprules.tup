@@ -188,35 +188,10 @@ _RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
 # If development/debug build
 ifdef DEVEL
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    # Statically analyze compiling source to objects
-    !scan_obj =                                                                \
-        |> ^ OBJ: scan-build %f => /dev/null^                                  \
-            scan-build -o $(BUILD_DIR)/scan-out                                \
-            $(CC) $(CFLAGS) $(CPPPATH) -fPIC -o /dev/null -c %f                \
-        |>
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    # Statically analyze combining objects to shared object (dynamic library)
-    !scan_lib =                                                                \
-        |> ^ LIB: scan-build %f => /dev/null^                                  \
-            scan-build -o $(BUILD_DIR)/scan-out                                \
-            $(CC) -shared -o /dev/null %f                                      \
-        |>
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    # Statically analyze combining objects to archive (static library)
-    !scan_arc =                                                                \
-        |> ^ ARC: scan-build %f => /dev/null^                                  \
-            scan-build -o $(BUILD_DIR)/scan-out                                \
-            ar rcs /dev/null %f                                                \
-        |>
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    # Statically analyze combining objects to archive (static library)
-    !scan_bin =                                                                \
-        |> ^ BIN: scan-build %f => /dev/null^                                  \
-            scan-build -o $(BUILD_DIR)/scan-out                                \
-            $(CC) $(CFLAGS) $(LIBPATH) $(CPPPATH) -o /dev/null %f              \
+    # Statically analyze source code
+    !analyze =                                                                 \
+        |> ^ ANA: %f => /dev/null^                                             \
+            clang --analyze $(CFLAGS) $(CPPPATH) -o /dev/null %f               \
         |>
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -231,13 +206,7 @@ ifdef DEVEL
 else
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     # Do nothing
-    !scan_obj = |> |>
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    !scan_lib = |> |>
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    !scan_arc = |> |>
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    !scan_bin = |> |>
+    !analyze = |> |>
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     # Run binary

@@ -41,12 +41,6 @@ else
             printf "Create config: $folder/tup.config\n";
             ln -s ../tuplet/configs/$config.config $folder/tup.config;
 
-            # A work-around for tup <=> scan-build compatibility
-            if [ "$build" == "devel" ];
-            then
-                mkdir -p $folder/build/scan-out;
-            fi;
-
         done;
     done;
 

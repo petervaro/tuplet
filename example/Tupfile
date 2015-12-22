@@ -6,7 +6,7 @@ include tuplet/Tuprules.tup
 
 
 #------------------------------------------------------------------------------#
-: foreach $(SOURCE_DIR)/*.c |> !scan_obj |>
+: foreach $(SOURCE_DIR)/*.c |> !analyze |>
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 : foreach $(SOURCE_DIR)/*.c                                                    \
     |> !to_obj                                                                 \
@@ -15,8 +15,6 @@ include tuplet/Tuprules.tup
 
 
 #------------------------------------------------------------------------------#
-: {objects} |> !scan_bin |>
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 : {objects}                                                                    \
     |> !to_bin                                                                 \
     |> $(BINARY_DIR)/%B$(BIN_EXT) {binary}
