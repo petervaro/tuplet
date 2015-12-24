@@ -16,7 +16,7 @@ include tuplet/Tuprules.tup
 if [ "$1" == "remove" ];
 then
     printf "Removing folders: build-*\n";
-    rm -Rf build-*;
+    rm -rf build-*;
 # If create build-variants
 else
     for compiler in $compilers;
@@ -40,7 +40,6 @@ else
             # Create symlink
             printf "Create config: $folder/tup.config\n";
             ln -s ../tuplet/configs/$config.config $folder/tup.config;
-
         done;
     done;
 
@@ -52,4 +51,5 @@ else
     fi;
 fi;
 
+# If everythign went fine
 exit;

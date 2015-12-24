@@ -57,9 +57,20 @@ ifdef DEVEL
     ifeq ($(CC_NAME),clang)
         WARN += -Weverything
     else
+        # Emulate -Weverything for GCC
         ifeq ($(CC_NAME),gcc)
             WARN += -Wpadded
             WARN += -Wconversion
+            WARN += -Wdouble-promotion
+            WARN += -Wformat=2
+            WARN += -Wfloat-equal
+            WARN += -Wundef
+            WARN += -Wbad-function-cast
+            WARN += -Wcast-qual
+            WARN += -Wwrite-strings
+            WARN += -Wmissing-prototypes
+            WARN += -Wredundant-decls
+            WARN += -Wunsuffixed-float-constants
         endif
     endif
 endif
@@ -188,11 +199,18 @@ _RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
 # If development/debug build
 ifdef DEVEL
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    # Statically analyze source code
-    !analyze =                                                                 \
-        |> ^ ANA: %f => /dev/null^                                             \
-            clang --analyze $(CFLAGS) $(CPPPATH) -o /dev/null %f               \
-        |>
+    # If clang is the compiler
+    ifeq ($(CC_NAME),clang)
+        #Statically analyze source code
+        !analyze =                                                             \
+            |> ^ ANA: %f => /dev/null^                                         \
+                $(CC) --analyze $(CFLAGS) $(CPPPATH) -o /dev/null %f           \
+            |>
+    # If not clang is the compiler
+    else
+        # Do nothing
+        !analyze = |> |>
+    endif
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     # Run binary via valgrind
