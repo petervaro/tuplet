@@ -4,7 +4,7 @@
 
 compilers="clang gcc";
 builds="devel release";
-tupfile='\
+tupfile="\
 ## INFO ##
 ## INFO ##
 
@@ -14,12 +14,12 @@ include tuplet/Tuprules.tup
 #----- EXAMPLE BUILD ----------------------------------------------------------#
 sources = src/main.c
 
-: foreach $(sources) |> !to_cpp  |> $(BUILD_DIR)/cpp-out/%B.cpp.%e
-: foreach $(sources) |> !analyze |>
-: foreach $(sources) |> !to_obj  |> $(BUILD_DIR)/%B.o {obj}
-: {obj}              |> !to_bin  |> $(BINARY_DIR)/%B {bin}
+: foreach \$(sources) |> !to_cpp  |> \$(BUILD_DIR)/cpp-out/%B.cpp.%e
+: foreach \$(sources) |> !analyze |>
+: foreach \$(sources) |> !to_obj  |> \$(BUILD_DIR)/%B.o {obj}
+: {obj}              |> !to_bin  |> \$(BINARY_DIR)/%B {bin}
 : {bin}              |> !run_it  |>
-';
+";
 
 # If remove build-variants
 if [ "$1" == "remove" ];
