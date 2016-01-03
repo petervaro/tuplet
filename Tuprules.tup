@@ -57,20 +57,22 @@ ifdef DEVEL
     ifeq ($(CC_NAME),clang)
         WARN += -Weverything
     else
-        # Emulate -Weverything for GCC
+        # Emulated -Weverything (for non clang compilers)
+        WEVERYTHING  = -Wpadded
+        WEVERYTHING += -Wconversion
+        WEVERYTHING += -Wdouble-promotion
+        WEVERYTHING += -Wformat=2
+        WEVERYTHING += -Wfloat-equal
+        WEVERYTHING += -Wundef
+        WEVERYTHING += -Wbad-function-cast
+        WEVERYTHING += -Wcast-qual
+        WEVERYTHING += -Wwrite-strings
+        WEVERYTHING += -Wmissing-prototypes
+        WEVERYTHING += -Wredundant-decls
+        WEVERYTHING += -Wunsuffixed-float-constants
+        # If compiler is GCC
         ifeq ($(CC_NAME),gcc)
-            WARN += -Wpadded
-            WARN += -Wconversion
-            WARN += -Wdouble-promotion
-            WARN += -Wformat=2
-            WARN += -Wfloat-equal
-            WARN += -Wundef
-            WARN += -Wbad-function-cast
-            WARN += -Wcast-qual
-            WARN += -Wwrite-strings
-            WARN += -Wmissing-prototypes
-            WARN += -Wredundant-decls
-            WARN += -Wunsuffixed-float-constants
+            WARN += $(WEVERYTHING)
         endif
     endif
 endif
@@ -216,6 +218,9 @@ ifdef DEVEL
     # Run binary via valgrind
     VALGRIND += --leak-check=full
     VALGRIND += --track-origins=yes
+    VALGRIND += --show-leak-kinds=all
+    VALGRIND += --read-var-info=yes
+    VALGRIND += --read-inline-info=yes
     !run_it =                                                                  \
         |> ^ RUN: valgrind %f^                                                 \
             $(ENV_VARS) valgrind $(VALGRIND) ./%f                              \

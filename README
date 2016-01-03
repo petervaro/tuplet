@@ -16,11 +16,11 @@ Setup
     $ cd path/to/project
     $ git init
     $ git submodule add https://github.com/petervaro/tuplet.git
-    $ cd tuplet
-    $ bash setup.sh
-    $ cd ..
-    $ touch Tupfile
+    $ bash tuplet/setup.sh
     $ tup init
+
+    # If no Tupfile found, a predefined one is created. By default it wants to
+    # compile and run src/main.c -- update it if necessary before running 'tup'
     $ tup
 
 
@@ -28,8 +28,7 @@ Remove
 ------
 
     $ cd path/to/project
-    $ cd tuplet
-    $ bash setup.sh remove
+    $ bash tuplet/setup.sh remove
 
 
 Examples

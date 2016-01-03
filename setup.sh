@@ -32,8 +32,8 @@ else
     do
         for build in $builds;
         do
-            config=$compiler-$build
-            folder=build-$config;
+            config="$compiler-$build"
+            folder="build-$config";
 
             # If folder already exists
             if [ -d $folder ]
