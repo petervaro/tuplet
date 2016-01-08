@@ -19,8 +19,11 @@ Setup
     $ bash tuplet/setup.sh
     $ tup init
 
-    # If no Tupfile found, a predefined one is created. By default it wants to
-    # compile and run src/main.c -- update it if necessary before running 'tup'
+    # If no 'Tupfile' found in the project folder, a predefined one will be
+    # created. By default, it wants to compile and run the file 'src/main.c'.
+    # It is recommended to update this behaviour first, before invoking the last
+    # command:
+
     $ tup
 
 

@@ -4,6 +4,7 @@
 
 compilers="clang gcc";
 builds="devel release";
+standards="c99 c11";
 tupfile=\
 '## INFO ##
 ## INFO ##
@@ -22,7 +23,10 @@ sources = src/main.c
 ';
 
 # If remove build-variants
-if [ "$1" == "remove" ];
+if [ "$1" == "remove" ] ||
+   [ "$1" == "rm" ]     ||
+   [ "$1" == "-r" ]     ||
+   [ "$1" == "--remove" ];
 then
     printf "Removing folders: build-*\n";
     rm -rf build-*;
@@ -32,23 +36,26 @@ else
     do
         for build in $builds;
         do
-            config="$compiler-$build"
-            folder="build-$config";
+            for standard in $standards;
+            do
+                config="$compiler-$build-$standard";
+                folder="build-$config";
 
-            # If folder already exists
-            if [ -d $folder ]
-            then
-                printf "Folder exists: $folder\n";
-                continue;
-            fi;
+                # If folder already exists
+                if [ -d $folder ]
+                then
+                    printf "Folder exists: $folder\n";
+                    continue;
+                fi;
 
-            # If folder does not exist, create it
-            printf "Create folder: $folder\n";
-            mkdir $folder;
+                # If folder does not exist, create it
+                printf "Create folder: $folder\n";
+                mkdir $folder;
 
-            # Create symlink
-            printf "Create config: $folder/tup.config\n";
-            ln -s ../tuplet/configs/$config.config $folder/tup.config;
+                # Create symlink
+                printf "Create config: $folder/tup.config\n";
+                ln -s ../tuplet/configs/$config.config $folder/tup.config;
+            done;
         done;
     done;
 
