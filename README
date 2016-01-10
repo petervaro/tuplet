@@ -10,6 +10,19 @@ implicitly, instead of following the step-by-step guide below!
 More info about cini: https://github.com/petervaro/cini
 
 
+Dependencies
+------------
+
+- gcc            (recommended: 5.3.0+)
+- clang          (recommended: 3.7.0+)
+- bash           (recommended: 4.3.42+)
+- grep           (recommended: 2.22+)
+- ar             (recommended: 2.25.1+)
+- valgrind       (recommended: 3.11.0+)
+- clang-analyzer (recommended: 3.7.0+)
+- tup            (recommended: 0.7.3+)
+
+
 Setup
 -----
 

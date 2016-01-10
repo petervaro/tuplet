@@ -153,11 +153,6 @@ else
     BUILD_DIR = build
 endif
 
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-# Helper commands
-_RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
-            stdout.write(sub(r'\n{3,}', '\n'*2, stdin.read(), flags=M))"
-
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 # Compile sources to objects
@@ -186,7 +181,8 @@ _RM_BLANK = python -c "from sys import stdin, stdout; from re import sub, M; \
 # Run pre-processor only
 !to_cpp =                                                                      \
     |> ^ CPP: %f => %o^                                                        \
-        $(CC) $(CFLAGS) $(CPPPATH) -CC -E -P %f | $(_RM_BLANK) > %o            \
+        $(CC) $(CFLAGS) -Wno-unused-macros $(CPPPATH) -CC -E -P %f |           \
+        grep -A 1 "." | grep -v "^--$" > %o                                    \
     |>
 
 
@@ -239,8 +235,3 @@ else
             $(ENV_VARS) ./%f                                                   \
         |>
 endif
-
-
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-# Print pretty separator
-!pretty = |> python -c "print('\n'*2 + '\033[1m' + '- '*40 + '\033[0m')" |>
