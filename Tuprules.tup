@@ -220,7 +220,7 @@ ifdef DEVEL
     VALGRIND += --read-inline-info=yes
     !run_it =                                                                  \
         |> ^ RUN: valgrind %f^                                                 \
-            $(ENV_VARS) valgrind $(VALGRIND) ./%f                              \
+            $(ENV_VARS) valgrind $(VALGRIND) ./%f $(RUN_ARGS)                  \
         |>
 # If release build
 else
@@ -232,6 +232,6 @@ else
     # Run binary
     !run_it =                                                                  \
         |> ^ RUN: %f^                                                          \
-            $(ENV_VARS) ./%f                                                   \
+            $(ENV_VARS) ./%f $(RUN_ARGS)                                       \
         |>
 endif
