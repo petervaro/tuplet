@@ -35,9 +35,9 @@ endif
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 # Decide which standard to use
 ifdef CSTND
-    STD = -std=@(CSTND)
+    STD = @(CSTND)
 else
-    STD = -std=c11
+    STD = c11
 endif
 
 
@@ -81,7 +81,7 @@ endif
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 # Define compiler flags
-CFLAGS  = $(STD)
+CFLAGS  = -std=$(STD)
 CFLAGS += $(WARN)
 
 # If development/debug build
