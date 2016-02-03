@@ -28,8 +28,20 @@ if [ "$1" == "remove" ] ||
    [ "$1" == "-r" ]     ||
    [ "$1" == "--remove" ];
 then
-    printf "Removing folders: build-*\n";
-    rm -rf build-*;
+    printf "Removing folders: build-(${compilers// /|})*\n";
+    rm -rf $(ls --color=never . | grep -E 'build-(${compilers// /|})*');
+elif [ "$1" == "finalize" ] ||
+     [ "$1" == "fin" ]      ||
+     [ "$1" == "-f" ]       ||
+     [ "$1" == "--finalize" ];
+then
+    printf "Replacing links with targets: build-(${compilers// /|})*/tup.config\n";
+    for folder in $(ls --color=never . | grep -E 'build-(${compilers// /|})*');
+    do
+        cd $folder;
+        cp --remove-destination $(readlink tup.config) tup.config;
+        cd ..;
+    done;
 # If create build-variants
 else
     for compiler in $compilers;
