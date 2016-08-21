@@ -58,9 +58,15 @@ ifdef DEVEL
         WARN += -Weverything
         WARN += -Wno-covered-switch-default
     else
+        # TODO: **struct padding**
+        #       For some reason GCC has false positive on countless places if
+        #       -Wpadded is added to the 'mix'. This option should be tested
+        #       occaisonally, wether they've fixed this bug or not. If possible
+        #       a report should be placed on their bugtracker
+        #WEVERYTHING  = -Wpadded
+
         # Emulated -Weverything (for non clang compilers)
-        WEVERYTHING  = -Wpadded
-        WEVERYTHING += -Wconversion
+        WEVERYTHING  = -Wconversion
         WEVERYTHING += -Wdouble-promotion
         WEVERYTHING += -Wformat=2
         WEVERYTHING += -Wfloat-equal
