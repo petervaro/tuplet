@@ -98,6 +98,7 @@ ifdef DEVEL
 # If release build
 else
     CFLAGS += -O3
+    CFLAGS += -march=native
 endif
 
 # Add compiler specific flags
