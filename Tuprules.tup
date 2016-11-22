@@ -164,9 +164,9 @@ endif
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 # C Pre Processor definitions
 ifdef CDEFS
-    DEFINITIONS = @(CDEFS)
+    DEFS = @(CDEFS)
 else
-    DEFINITIONS =
+    DEFS =
 endif
 
 
@@ -174,7 +174,7 @@ endif
 # Compile sources to objects
 !to_obj =                                                                      \
     |> ^ OBJ: %f => %o^                                                        \
-        $(CC) $(CFLAGS) $(CPPPATH) $(DEFINITIONS) -fPIC -o %o -c %f            \
+        $(CC) $(CFLAGS) $(CPPPATH) $(DEFS) -fPIC -o %o -c %f                   \
     |>
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -197,7 +197,7 @@ endif
 # Run pre-processor only
 !to_cpp =                                                                      \
     |> ^ CPP: %f => %o^                                                        \
-        $(CC) $(CFLAGS) -Wno-unused-macros $(DEFINITIONS) $(CPPPATH)           \
+        $(CC) $(CFLAGS) -Wno-unused-macros $(DEFS) $(CPPPATH)                  \
             -CC -E -P %f | grep -A 1 "." | grep -v "^--$" > %o                 \
     |>
 
@@ -206,7 +206,7 @@ endif
 # Combine objects to a binary (executable)
 !to_bin =                                                                      \
     |> ^ BIN: %f => %o^                                                        \
-        $(CC) $(CFLAGS) $(DEFINITIONS) $(LIBPATH) $(CPPPATH) -o %o %f          \
+        $(CC) $(CFLAGS) $(DEFS) $(LIBPATH) $(CPPPATH) -o %o %f                 \
     |>
 
 
@@ -219,8 +219,7 @@ ifdef DEVEL
         #Statically analyze source code
         !analyze =                                                             \
             |> ^ ANA: %f => /dev/null^                                         \
-                $(CC) --analyze $(CFLAGS) $(DEFINITIONS) $(CPPPATH)            \
-                    -o /dev/null %f                                            \
+                $(CC) --analyze $(CFLAGS) $(DEFS) $(CPPPATH) -o /dev/null %f   \
             |>
     # If not clang is the compiler
     else

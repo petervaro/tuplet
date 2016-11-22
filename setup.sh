@@ -30,6 +30,7 @@ if [ "$1" == "remove" ] ||
 then
     printf "Removing folders: build-(${compilers// /|})*\n";
     rm -rf $(ls --color=never . | grep -E 'build-(${compilers// /|})*');
+# If bake symlinks to tup.config (create standalone files)
 elif [ "$1" == "finalize" ] ||
      [ "$1" == "fin" ]      ||
      [ "$1" == "-f" ]       ||
@@ -41,6 +42,23 @@ then
         cd $folder;
         cp --remove-destination $(readlink tup.config) tup.config;
         cd ..;
+    done;
+# If clear build directory (for rebuilding the project)
+elif [ "$1" == "clean" ] ||
+     [ "$1" == "cl" ]    ||
+     [ "$1" == "-c" ]    ||
+     [ "$1" == "--clean" ];
+then
+    printf "Cleaning build folder: build-(${compilers// /|})*/*\n";
+    for folder in build-*;
+    do
+        for file in $folder/*;
+        do
+            if [ "$file" != "$folder/tup.config" ];
+            then
+                rm -rf "$file";
+            fi;
+        done;
     done;
 # If create build-variants
 else
