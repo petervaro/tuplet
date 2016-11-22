@@ -153,7 +153,7 @@ else
     BINARY_DIR = bin
 endif
 
-# Directpry of generated files and compiled objects
+# Directory of generated files and compiled objects
 ifdef TEMPORARY_OUTPUT_DIR
     BUILD_DIR = @(TEMPORARY_OUTPUT_DIR)
 else
@@ -162,10 +162,19 @@ endif
 
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+# C Pre Processor definitions
+ifdef CDEFS
+    DEFINITIONS = @(CDEFS)
+else
+    DEFINITIONS =
+endif
+
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 # Compile sources to objects
 !to_obj =                                                                      \
     |> ^ OBJ: %f => %o^                                                        \
-        $(CC) $(CFLAGS) $(CPPPATH) -fPIC -o %o -c %f                           \
+        $(CC) $(CFLAGS) $(CPPPATH) $(DEFINITIONS) -fPIC -o %o -c %f            \
     |>
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -188,8 +197,8 @@ endif
 # Run pre-processor only
 !to_cpp =                                                                      \
     |> ^ CPP: %f => %o^                                                        \
-        $(CC) $(CFLAGS) -Wno-unused-macros $(CPPPATH) -CC -E -P %f |           \
-        grep -A 1 "." | grep -v "^--$" > %o                                    \
+        $(CC) $(CFLAGS) -Wno-unused-macros $(DEFINITIONS) $(CPPPATH)           \
+            -CC -E -P %f | grep -A 1 "." | grep -v "^--$" > %o                 \
     |>
 
 
@@ -197,7 +206,7 @@ endif
 # Combine objects to a binary (executable)
 !to_bin =                                                                      \
     |> ^ BIN: %f => %o^                                                        \
-        $(CC) $(CFLAGS) $(LIBPATH) $(CPPPATH) -o %o %f                         \
+        $(CC) $(CFLAGS) $(DEFINITIONS) $(LIBPATH) $(CPPPATH) -o %o %f          \
     |>
 
 
@@ -210,7 +219,8 @@ ifdef DEVEL
         #Statically analyze source code
         !analyze =                                                             \
             |> ^ ANA: %f => /dev/null^                                         \
-                $(CC) --analyze $(CFLAGS) $(CPPPATH) -o /dev/null %f           \
+                $(CC) --analyze $(CFLAGS) $(DEFINITIONS) $(CPPPATH)            \
+                    -o /dev/null %f                                            \
             |>
     # If not clang is the compiler
     else
